@@ -3,4 +3,4 @@ project(C_homeworks C)
 add_compile_options(-Wall -Wextra -pedantic)
 
 # Executables
-add_executable(csv src/csv/csv.c)
+add_executable(test src/test/test.c)
