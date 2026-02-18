@@ -16,7 +16,8 @@ int max(int a, int b)
 
 bool isNumber(char* string)
 {
-    bool isPointIn = false;
+    bool isFloat = false;
+    bool isNegative = false;
     int length = strlen(string);
 
     for (int i = 0; i < length; ++i) {
@@ -25,12 +26,13 @@ bool isNumber(char* string)
             if (i != 0) {
                 return false;
             }
+            isNegative = true;
             break;
         case '.':
-            if (i == 0 || i == (length - 1) || isPointIn) {
+            if (i == 0 || i == (length - 1) || isFloat || (i == 1 && isNegative)) {
                 return false;
             }
-            isPointIn = true;
+            isFloat = true;
             break;
         default:
             if (!isdigit(string[i])) {
@@ -43,9 +45,9 @@ bool isNumber(char* string)
     return true;
 }
 
-void table2txt(char* outputPath, char*** table, int* maxWordLength, int rowCount, int columnCount)
+void table2txt(char*** table, int* maxWordLength, int rowCount, int columnCount)
 {
-    FILE* output = fopen(outputPath, "w");
+    FILE* output = fopen("output.txt", "w");
 
     for (int row = 0; row < rowCount; ++row) {
         // Рамочка
@@ -86,8 +88,9 @@ void table2txt(char* outputPath, char*** table, int* maxWordLength, int rowCount
     fclose(output);
 }
 
-void csv2txt(FILE* csv, char* outputPath)
+void csv2txt(FILE* csv)
 {
+    // В некоторых динамических массивах мы увеличиваем размер на 1 а не умножаем на 2, чтобы контролировать мусор.
     char*** table = malloc(sizeof(*table));
     int tableSize = 1;
     int tableUsed = 0;
@@ -98,7 +101,7 @@ void csv2txt(FILE* csv, char* outputPath)
     int wordSize = 1;
     int wordUsed = 0;
 
-    int* maxWordLength = malloc(sizeof(*maxWordLength));
+    int* maxWordLength = calloc(1, sizeof(*maxWordLength));
     int maxWordLengthSize = 1;
 
     int columnCount = 0;
@@ -109,8 +112,9 @@ void csv2txt(FILE* csv, char* outputPath)
         switch (currentSymbol) {
         case ',':
             if (rowUsed == maxWordLengthSize) {
-                maxWordLengthSize *= 2;
+                ++maxWordLengthSize;
                 maxWordLength = realloc(maxWordLength, maxWordLengthSize * sizeof(*maxWordLength));
+                maxWordLength[maxWordLengthSize - 1] = 0;
             }
             maxWordLength[rowUsed] = max(maxWordLength[rowUsed], strlen(word));
 
@@ -160,7 +164,7 @@ void csv2txt(FILE* csv, char* outputPath)
         }
     }
 
-    table2txt(outputPath, table, maxWordLength, tableUsed, columnCount);
+    table2txt(table, maxWordLength, tableUsed, columnCount);
 
     free(maxWordLength);
     for (int row = 0; row < tableUsed; ++row) {
