@@ -43,9 +43,9 @@ bool isNumber(char* string)
     return true;
 }
 
-void table2txt(char*** table, int* maxWordLength, int rowCount, int columnCount)
+void table2txt(char* outputPath, char*** table, int* maxWordLength, int rowCount, int columnCount)
 {
-    FILE* output = fopen("output.txt", "w");
+    FILE* output = fopen(outputPath, "w");
 
     for (int row = 0; row < rowCount; ++row) {
         // Рамочка
@@ -60,7 +60,7 @@ void table2txt(char*** table, int* maxWordLength, int rowCount, int columnCount)
             }
         }
         fprintf(output, "+\n");
-        // Значения и кусочки рамочки
+        // Значения и боковые кусочки рамочки
         for (int col = 0; col < columnCount; ++col) {
             if (isNumber(table[row][col]) && row != 0) {
                 fprintf(output, "| %*s ", maxWordLength[col], table[row][col]);
@@ -86,7 +86,7 @@ void table2txt(char*** table, int* maxWordLength, int rowCount, int columnCount)
     fclose(output);
 }
 
-void csv2txt(FILE* csv)
+void csv2txt(FILE* csv, char* outputPath)
 {
     char*** table = malloc(sizeof(*table));
     int tableSize = 1;
@@ -160,7 +160,7 @@ void csv2txt(FILE* csv)
         }
     }
 
-    table2txt(table, maxWordLength, tableUsed, columnCount);
+    table2txt(outputPath, table, maxWordLength, tableUsed, columnCount);
 
     free(maxWordLength);
     for (int row = 0; row < tableUsed; ++row) {
