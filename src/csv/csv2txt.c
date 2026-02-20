@@ -1,12 +1,13 @@
 #include "csv2txt.h"
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int max(int a, int b)
+size_t max(size_t a, size_t b)
 {
     if (a > b) {
         return a;
@@ -18,9 +19,9 @@ bool isNumber(char* string)
 {
     bool isFloat = false;
     bool isNegative = false;
-    int length = strlen(string);
+    size_t length = strlen(string);
 
-    for (int i = 0; i < length; ++i) {
+    for (size_t i = 0; i < length; ++i) {
         switch (string[i]) {
         case '-':
             if (i != 0) {
@@ -29,7 +30,7 @@ bool isNumber(char* string)
             isNegative = true;
             break;
         case '.':
-            if (i == 0 || i == (length - 1) || isFloat || (i == 1 && isNegative)) {
+            if (i == 0 || i == (length - 1) || isFloat || (i == 1 && isNegative)) { // Случаи: .123 123. 1.23. -.123
                 return false;
             }
             isFloat = true;
@@ -45,7 +46,7 @@ bool isNumber(char* string)
     return true;
 }
 
-void table2txt(char*** table, int* maxWordLength, int rowCount, int columnCount)
+void table2txt(char*** table, size_t* maxWordLength, int rowCount, int columnCount)
 {
     FILE* output = fopen("output.txt", "w");
 
@@ -53,7 +54,7 @@ void table2txt(char*** table, int* maxWordLength, int rowCount, int columnCount)
         // Рамочка
         for (int col = 0; col < columnCount; ++col) {
             fprintf(output, "+");
-            for (int frameCounter = 0; frameCounter < maxWordLength[col] + 2; ++frameCounter) {
+            for (size_t frameCounter = 0; frameCounter < maxWordLength[col] + 2; ++frameCounter) {
                 if (row < 2) {
                     fprintf(output, "=");
                 } else {
@@ -65,9 +66,9 @@ void table2txt(char*** table, int* maxWordLength, int rowCount, int columnCount)
         // Значения и боковые кусочки рамочки
         for (int col = 0; col < columnCount; ++col) {
             if (isNumber(table[row][col]) && row != 0) {
-                fprintf(output, "| %*s ", maxWordLength[col], table[row][col]);
+                fprintf(output, "| %*s ", (int)maxWordLength[col], table[row][col]);
             } else {
-                fprintf(output, "| %-*s ", maxWordLength[col], table[row][col]);
+                fprintf(output, "| %-*s ", (int)maxWordLength[col], table[row][col]);
             }
         }
         fprintf(output, "|\n");
@@ -75,7 +76,7 @@ void table2txt(char*** table, int* maxWordLength, int rowCount, int columnCount)
     // Рамочка
     for (int col = 0; col < columnCount; ++col) {
         fprintf(output, "+");
-        for (int frameCounter = 0; frameCounter < maxWordLength[col] + 2; ++frameCounter) {
+        for (size_t frameCounter = 0; frameCounter < maxWordLength[col] + 2; ++frameCounter) {
             if (rowCount < 2) {
                 fprintf(output, "=");
             } else {
@@ -101,26 +102,30 @@ void csv2txt(FILE* csv)
     int wordSize = 1;
     int wordUsed = 0;
 
-    int* maxWordLength = calloc(1, sizeof(*maxWordLength));
+    size_t* maxWordLength = calloc(1, sizeof(*maxWordLength));
     int maxWordLengthSize = 1;
 
     int columnCount = 0;
 
     while (!feof(csv)) {
-        char currentSymbol = fgetc(csv);
+        char currentSymbol = (char)fgetc(csv);
 
         switch (currentSymbol) {
         case ',':
             if (rowUsed == maxWordLengthSize) {
                 ++maxWordLengthSize;
-                maxWordLength = realloc(maxWordLength, maxWordLengthSize * sizeof(*maxWordLength));
+                size_t* tempPtr = realloc(maxWordLength, maxWordLengthSize * sizeof(*tempPtr));
+                assert(tempPtr != NULL && "Reallocation of memory is failed.");
+                maxWordLength = tempPtr;
                 maxWordLength[maxWordLengthSize - 1] = 0;
             }
             maxWordLength[rowUsed] = max(maxWordLength[rowUsed], strlen(word));
 
             if (rowUsed == rowSize) {
                 rowSize *= 2;
-                row = realloc(row, rowSize * sizeof(*row));
+                char** tempPtr = realloc(row, rowSize * sizeof(*tempPtr));
+                assert(tempPtr != NULL && "Reallocation of memory is failed.");
+                row = tempPtr;
             }
             row[rowUsed++] = word;
             word = calloc(1, sizeof(*word));
@@ -131,14 +136,19 @@ void csv2txt(FILE* csv)
             columnCount = rowUsed + 1;
 
             if (rowUsed == maxWordLengthSize) {
-                maxWordLengthSize *= 2;
-                maxWordLength = realloc(maxWordLength, maxWordLengthSize * sizeof(*maxWordLength));
+                ++maxWordLengthSize;
+                size_t* tempPtr = realloc(maxWordLength, maxWordLengthSize * sizeof(*tempPtr));
+                assert(tempPtr != NULL && "Reallocation of memory is failed.");
+                maxWordLength = tempPtr;
+                maxWordLength[maxWordLengthSize - 1] = 0;
             }
             maxWordLength[rowUsed] = max(maxWordLength[rowUsed], strlen(word));
 
             if (rowUsed == rowSize) {
                 rowSize *= 2;
-                row = realloc(row, rowSize * sizeof(*row));
+                char** tempPtr = realloc(row, rowSize * sizeof(*tempPtr));
+                assert(tempPtr != NULL && "Reallocation of memory is failed.");
+                row = tempPtr;
             }
             row[rowUsed++] = word;
             word = calloc(1, sizeof(*word));
@@ -147,7 +157,9 @@ void csv2txt(FILE* csv)
 
             if (tableUsed == tableSize) {
                 tableSize *= 2;
-                table = realloc(table, tableSize * sizeof(*table));
+                char*** tempPtr = realloc(table, tableSize * sizeof(*tempPtr));
+                assert(tempPtr != NULL && "Reallocation of memory is failed.");
+                table = tempPtr;
             }
             table[tableUsed++] = row;
             row = malloc(sizeof(*row));
@@ -157,21 +169,26 @@ void csv2txt(FILE* csv)
         default:
             if (wordUsed == wordSize) {
                 ++wordSize;
-                word = realloc(word, wordSize * sizeof(*word));
+                char* tempPtr = realloc(word, wordSize * sizeof(*tempPtr));
+                assert(tempPtr != NULL && "Reallocation of memory is failed.");
+                word = tempPtr;
             }
             word[wordUsed++] = currentSymbol;
             break;
         }
     }
 
+    free(row);
+    free(word);
+
     table2txt(table, maxWordLength, tableUsed, columnCount);
 
     free(maxWordLength);
-    for (int row = 0; row < tableUsed; ++row) {
-        for (int col = 0; col < columnCount; ++col) {
-            free(table[row][col]);
+    for (int rowIndex = 0; rowIndex < tableUsed; ++rowIndex) {
+        for (int colIndex = 0; colIndex < columnCount; ++colIndex) {
+            free(table[rowIndex][colIndex]);
         }
-        free(table[row]);
+        free(table[rowIndex]);
     }
     free(table);
 }

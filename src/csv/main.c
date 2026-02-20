@@ -34,7 +34,7 @@ bool filescmp(char* filePath1, char* filePath2)
 }
 
 // For tests, pass the "test" flag as input.
-int test()
+int test(void)
 {
     // Empty test
     FILE* empty = fopen("test/testEmpty.csv", "r");
