@@ -1,6 +1,5 @@
 #include "avl_tree.h"
 
-#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,67 +15,77 @@ typedef struct Node {
 
 typedef struct AVLTree {
     Node* root;
+    size_t size;
 } AVLTree;
 
-AVLTree* avlTreeCreate()
+static bool isLeaf(Node* node)
 {
-    AVLTree* tree = calloc(1, sizeof(*tree));
-    assert(tree != NULL && "Memory allocation error.");
-    return tree;
+    return node != NULL && node->rightChild == NULL && node->leftChild == NULL;
 }
 
-void avlTreeFreeRecursion(Node* node)
+AVLTree* avlTreeCreate(void)
 {
-    if (node != NULL) {
-        avlTreeFreeRecursion(node->leftChild);
-        avlTreeFreeRecursion(node->rightChild);
-        free(node);
-    }
-}
-
-void avlTreeFree(AVLTree* tree)
-{
-    avlTreeFreeRecursion(tree->root);
-    free(tree);
+    return calloc(1, sizeof(AVLTree));
 }
 
 char* avlTreeFind(AVLTree* tree, char* key)
 {
+    if (tree == NULL || key == NULL) {
+        return NULL;
+    }
+
     Node* currentNode = tree->root;
     while (currentNode != NULL) {
-        if (strcmp(key, currentNode->key) == 0) {
+        if (strcmp(key, currentNode->key) < 0) {
+            currentNode = currentNode->leftChild;
+        } else if (strcmp(key, currentNode->key) > 0) {
+            currentNode = currentNode->rightChild;
+        } else {
             return currentNode->value;
         }
-        if (strcmp(key, currentNode->key) < 0) {
-            currentNode = currentNode->leftChild;
-        }
-        if (strcmp(key, currentNode->key) > 0) {
-            currentNode = currentNode->rightChild;
-        }
     }
+
     return NULL;
 }
 
-// Возвращает ноду, если она есть. Иначе NULL
-Node* avlTreeFindNode(AVLTree* tree, char* key)
+/*
+ * Освобождает память ноды и зануляет указатель на неё.
+ * Для предотвращения появления висячих нод работает только на листьях.
+ * Не зануляет указатель родителя этой ноды.
+ */
+static void avlTreeFreeNode(Node** node)
 {
-    Node* currentNode = tree->root;
-    while (currentNode != NULL) {
-        if (strcmp(key, currentNode->key) == 0) {
-            return currentNode;
-        }
-        if (strcmp(key, currentNode->key) < 0) {
-            currentNode = currentNode->leftChild;
-        }
-        if (strcmp(key, currentNode->key) > 0) {
-            currentNode = currentNode->rightChild;
-        }
+    if (node != NULL && isLeaf(*node)) {
+        free((*node)->key);
+        free((*node)->value);
+        free(*node);
+        *node = NULL;
     }
-    return NULL;
 }
 
-// Может использоваться для нахождения высоты какого-либо поддерева с корнем в node
-size_t avlTreeHeightRecursion(Node* node)
+static void avlTreeFreeRecursion(Node* node)
+{
+    if (node != NULL) {
+        avlTreeFreeRecursion(node->leftChild);
+        avlTreeFreeRecursion(node->rightChild);
+        avlTreeFreeNode(&node);
+    }
+}
+
+bool avlTreeFree(AVLTree** tree)
+{
+    if (tree == NULL || *tree == NULL) {
+        return false;
+    }
+
+    avlTreeFreeRecursion((*tree)->root);
+    free(*tree);
+    *tree = NULL;
+
+    return true;
+}
+
+static size_t avlTreeHeightRecursion(Node* node)
 {
     if (node == NULL) {
         return 0;
@@ -87,19 +96,42 @@ size_t avlTreeHeightRecursion(Node* node)
     return (leftHeight > rightHeight) ? (leftHeight + 1) : (rightHeight + 1);
 }
 
-size_t avlTreeHeight(AVLTree* tree)
+bool avlTreeHeight(AVLTree* tree, size_t* height)
 {
-    return avlTreeHeightRecursion(tree->root);
+    if (tree == NULL || height == NULL) {
+        return false;
+    }
+
+    *height = avlTreeHeightRecursion(tree->root);
+    return true;
 }
 
-Node* rotateLeft(Node* node)
+bool avlTreeSize(AVLTree* tree, size_t* size)
 {
-    if (node->rightChild->balance == 0) {
+    if (tree == NULL || size == NULL) {
+        return false;
+    }
+
+    *size = tree->size;
+    return true;
+}
+
+static Node* rotateLeft(Node* node)
+{
+    if (node == NULL || node->rightChild == NULL) {
+        return NULL;
+    }
+
+    switch (node->rightChild->balance) {
+    case 0:
         node->balance = -1;
         node->rightChild->balance = 1;
-    } else {
+        break;
+
+    default: // case 1
         node->balance = 0;
         node->rightChild->balance = 0;
+        break;
     }
 
     Node* a = node;
@@ -112,8 +144,12 @@ Node* rotateLeft(Node* node)
     return b;
 }
 
-Node* rotateRight(Node* node)
+static Node* rotateRight(Node* node)
 {
+    if (node == NULL || node->leftChild == NULL) {
+        return NULL;
+    }
+
     switch (node->leftChild->balance) {
     case 0:
         node->balance = -1;
@@ -136,8 +172,12 @@ Node* rotateRight(Node* node)
     return b;
 }
 
-Node* bigRotateLeft(Node* node)
+static Node* bigRotateLeft(Node* node)
 {
+    if (node == NULL || node->rightChild == NULL || node->rightChild->leftChild == NULL) {
+        return NULL;
+    }
+
     switch (node->rightChild->leftChild->balance) {
     case -1:
         node->balance = 1;
@@ -168,8 +208,12 @@ Node* bigRotateLeft(Node* node)
     return c;
 }
 
-Node* bigRotateRight(Node* node)
+static Node* bigRotateRight(Node* node)
 {
+    if (node == NULL || node->leftChild == NULL || node->leftChild->rightChild == NULL) {
+        return NULL;
+    }
+
     switch (node->leftChild->rightChild->balance) {
     case -1:
         node->balance = 1;
@@ -200,8 +244,12 @@ Node* bigRotateRight(Node* node)
     return c;
 }
 
-Node* balance(Node* node)
+static Node* balance(Node* node)
 {
+    if (node == NULL) {
+        return NULL;
+    }
+
     if (node->balance == 2) {
         if (node->rightChild->balance >= 0) {
             return rotateLeft(node);
@@ -209,145 +257,244 @@ Node* balance(Node* node)
         return bigRotateLeft(node);
     }
     if (node->balance == -2) {
-        if (node->leftChild->balance >= 0) {
+        if (node->leftChild->balance <= 0) {
             return rotateRight(node);
         }
         return bigRotateRight(node);
     }
+
     return node;
 }
 
-Node* avlTreeAddRecursion(Node* node, char* key, char* value)
+static Node* avlTreeAddRecursion(Node* node, char* key, char* value, bool* isBalanced, bool* error)
 {
     if (node == NULL) {
         Node* newNode = calloc(1, sizeof(*newNode));
-        assert(newNode != NULL && "Memory allocation error.");
-        newNode->key = key;
-        newNode->value = value;
+        if (newNode == NULL) {
+            *error = true;
+            return NULL;
+        }
+
+        newNode->key = malloc((strlen(key) + 1) * sizeof(char));
+        if (newNode->key == NULL) {
+            *error = true;
+            return NULL;
+        }
+        strcpy(newNode->key, key);
+
+        newNode->value = malloc((strlen(value) + 1) * sizeof(char));
+        if (newNode->value == NULL) {
+            *error = true;
+            return NULL;
+        }
+        strcpy(newNode->value, value);
+
         return newNode;
     }
+
     if (strcmp(key, node->key) < 0) {
-        node->leftChild = avlTreeAddRecursion(node->leftChild, key, value);
-        --node->balance;
+        node->leftChild = avlTreeAddRecursion(node->leftChild, key, value, isBalanced, error);
+        if (!(*isBalanced) && !(*error)) {
+            if (node->balance == 1) {
+                *isBalanced = true;
+            }
+            --node->balance;
+        }
     }
     if (strcmp(key, node->key) > 0) {
-        node->rightChild = avlTreeAddRecursion(node->rightChild, key, value);
-        ++node->balance;
+        node->rightChild = avlTreeAddRecursion(node->rightChild, key, value, isBalanced, error);
+        if (!(*isBalanced) && !(*error)) {
+            if (node->balance == -1) {
+                *isBalanced = true;
+            }
+            ++node->balance;
+        }
     }
+
     return balance(node);
 }
 
 bool avlTreeAdd(AVLTree* tree, char* key, char* value)
 {
-    if (avlTreeFind(tree, key) != NULL) {
+    if (tree == NULL || key == NULL || value == NULL || avlTreeFind(tree, key) != NULL) {
         return false;
     }
 
-    Node* newNode = avlTreeAddRecursion(tree->root, key, value);
-    if (tree->root == NULL) {
-        tree->root = newNode;
+    bool error = false;
+    bool isBalanced = false;
+    Node* newRoot = avlTreeAddRecursion(tree->root, key, value, &isBalanced, &error);
+    if (error) {
+        return false;
     }
+    tree->root = newRoot;
+
+    ++(tree->size);
     return true;
 }
 
-bool isLeaf(Node* node)
+bool avlTreeAddFromFile(AVLTree* tree, char* filename)
 {
-    return node->rightChild == NULL && node->leftChild == NULL;
+    if (tree == NULL || filename == NULL) {
+        return false;
+    }
+
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        return false;
+    }
+
+    char* key = calloc(4, sizeof(*key));
+    size_t keyCapacity = 4;
+    size_t keySize = 1; // Размер сразу 1 на \0
+    char* value = calloc(64, sizeof(*value));
+    size_t valueCapacity = 64;
+    size_t valueSize = 1; // Размер сразу 1 на \0
+
+    bool isPreColon = true;
+    while (!feof(file)) {
+        char currentSymbol = fgetc(file);
+        switch (currentSymbol) {
+        case ':':
+            if (isPreColon) {
+                isPreColon = false;
+            } else {
+                free(key);
+                free(value);
+                fclose(file);
+                return false;
+            }
+            break;
+        case '\n':
+            if (!isPreColon) {
+                avlTreeAdd(tree, key, value);
+                printf("%s - %s\n", key, value);
+
+                free(key);
+                free(value);
+                key = calloc(4, sizeof(*key));
+                keyCapacity = 4;
+                keySize = 1;
+                value = calloc(64, sizeof(*value));
+                valueCapacity = 64;
+                valueSize = 1;
+
+                isPreColon = true;
+            } else {
+                free(key);
+                free(value);
+                fclose(file);
+                return false;
+            }
+            break;
+        default:
+            if (isPreColon) {
+                if (keySize == keyCapacity) {
+                    keyCapacity *= 2;
+                    key = realloc(key, keyCapacity * sizeof(*key));
+                }
+                key[keySize - 1] = currentSymbol;
+                key[keySize++] = '\0';
+            } else {
+                if (valueSize == valueCapacity) {
+                    valueCapacity *= 2;
+                    value = realloc(value, valueCapacity * sizeof(*value));
+                }
+                value[valueSize - 1] = currentSymbol;
+                value[valueSize++] = '\0';
+            }
+            break;
+        }
+    }
+
+    free(key);
+    free(value);
+    fclose(file);
+    return true;
 }
 
-// Свапает ноды. Возвращает указатель на b, которая теперь находится на месте a.
-Node* swapNodes(Node* a, Node* b)
+/*
+ * Меняет местами две ненулевые ноды.
+ * В случае нулёвости одной из нод ничего не делает.
+ */
+static void swapNodes(Node* a, Node* b)
 {
-    Node* tempLeft = a->leftChild;
-    Node* tempRight = a->rightChild;
-    a->leftChild = b->leftChild;
-    a->rightChild = b->rightChild;
-    b->leftChild = tempLeft;
-    b->rightChild = tempRight;
+    if (a == NULL || b == NULL) {
+        return;
+    }
 
-    Node* temp = a;
-    a = b;
-    b = temp;
-
-    return a;
+    char* tempKey = a->key;
+    char* tempValue = a->value;
+    a->key = b->key;
+    a->value = b->value;
+    b->key = tempKey;
+    b->value = tempValue;
 }
 
-Node* avlTreeDeleteRecursion(Node* node, char* key)
+static Node* avlTreeDeleteRecursion(Node* node, char* key, bool* isBalanced, bool* error)
 {
-    if (strcmp(key, node->key) == 0) {
+    if (node == NULL || key == NULL) {
+        *error = true;
+        return NULL;
+    }
+
+    if (strcmp(key, node->key) < 0) {
+        node->leftChild = avlTreeDeleteRecursion(node->leftChild, key, isBalanced, error);
+        if (!(*isBalanced) && !(*error)) {
+            if (node->balance == 0) {
+                *isBalanced = true;
+            }
+            ++node->balance;
+        }
+    } else if (strcmp(key, node->key) > 0) {
+        node->rightChild = avlTreeDeleteRecursion(node->rightChild, key, isBalanced, error);
+        if (!(*isBalanced) && !(*error)) {
+            if (node->balance == 0) {
+                *isBalanced = true;
+            }
+            --node->balance;
+        }
+    } else {
         if (isLeaf(node)) {
-            free(node);
+            avlTreeFreeNode(&node);
             return NULL;
         }
 
-        Node* nodeToSwap = node->rightChild;
-        while (nodeToSwap->leftChild != NULL) {
-            nodeToSwap = nodeToSwap->leftChild;
+        if (node->leftChild == NULL) {
+            Node* nodeToSwap = node->rightChild;
+            while (nodeToSwap->leftChild != NULL) {
+                nodeToSwap = nodeToSwap->leftChild;
+            }
+            swapNodes(nodeToSwap, node);
+
+            node->rightChild = avlTreeDeleteRecursion(node->rightChild, key, isBalanced, error);
+        } else {
+            Node* nodeToSwap = node->leftChild;
+            while (nodeToSwap->rightChild != NULL) {
+                nodeToSwap = nodeToSwap->rightChild;
+            }
+            swapNodes(nodeToSwap, node);
+
+            node->leftChild = avlTreeDeleteRecursion(node->leftChild, key, isBalanced, error);
         }
-        avlTreeDeleteRecursion(swapNodes(nodeToSwap, node), key);
     }
-    if (strcmp(key, node->key) < 0) {
-        avlTreeDeleteRecursion(node->leftChild, key);
-        ++node->balance;
-    }
-    if (strcmp(key, node->key) > 0) {
-        avlTreeDeleteRecursion(node->leftChild, key);
-        --node->balance;
-    }
+
     return balance(node);
 }
 
 bool avlTreeDelete(AVLTree* tree, char* key)
 {
-    if (avlTreeFind(tree, key) == NULL) {
+    if (tree == NULL || avlTreeFind(tree, key) == NULL) {
         return false;
     }
 
-    avlTreeDeleteRecursion(tree->root, key);
+    bool error = false;
+    bool isBalanced = false;
+    Node* newRoot = avlTreeDeleteRecursion(tree->root, key, &isBalanced, &error);
+    if (error) {
+        return false;
+    }
+    tree->root = newRoot;
+
+    --(tree->size);
     return true;
-}
-
-void avlTreeKeysToArrayRecursion(Node* node, char** keysArray, size_t arraySize, int currentNumber)
-{
-    if (node == NULL) {
-        return;
-    }
-    keysArray[currentNumber - 1] = node->key;
-    avlTreeKeysToArrayRecursion(node->leftChild, keysArray, arraySize, currentNumber * 2);
-    avlTreeKeysToArrayRecursion(node->rightChild, keysArray, arraySize, currentNumber * 2 + 1);
-}
-
-// Возвращает массив указателей на ключи поддерева конкретной ноды, включая её, в порядке обхода в ширину.
-// Если ноды нету, ставит на её месте NULL. Освобождается простым free.
-char** avlTreeKeysToArray(Node* node)
-{
-    size_t arraySize = (size_t)pow(2, avlTreeHeightRecursion(node)) - 1;
-    char** keysArray = calloc(arraySize, sizeof(*keysArray));
-    avlTreeKeysToArrayRecursion(node, keysArray, arraySize, 1);
-    return keysArray;
-}
-
-bool isPowerOfTwo(int a)
-{
-    while (a != 1) {
-        if (a % 2 == 1) {
-            return false;
-        }
-        a /= 2;
-    }
-    return true;
-}
-
-void avlTreePrint(AVLTree* tree)
-{
-    // size_t height = avlTreeHeight(tree);
-    // size_t width = 4 * (size_t)pow(2, (height - 1)) - 1;
-    size_t size = (size_t)pow(2, avlTreeHeight(tree)) - 1;
-    char** keysArray = avlTreeKeysToArray(tree->root);
-
-    for (size_t i = 0; i < size; ++i) {
-        printf("%s ", keysArray[i]);
-    }
-
-    free(keysArray);
 }
