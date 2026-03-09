@@ -68,6 +68,8 @@ static void avlTreeFreeRecursion(Node* node)
     if (node != NULL) {
         avlTreeFreeRecursion(node->leftChild);
         avlTreeFreeRecursion(node->rightChild);
+        node->leftChild = NULL;
+        node->rightChild = NULL;
         avlTreeFreeNode(&node);
     }
 }
@@ -295,23 +297,21 @@ static Node* avlTreeAddRecursion(Node* node, char* key, char* value, bool* isBal
     if (strcmp(key, node->key) < 0) {
         node->leftChild = avlTreeAddRecursion(node->leftChild, key, value, isBalanced, error);
         if (!(*isBalanced) && !(*error)) {
-            if (node->balance == 1) {
-                *isBalanced = true;
-            }
             --node->balance;
         }
     }
     if (strcmp(key, node->key) > 0) {
         node->rightChild = avlTreeAddRecursion(node->rightChild, key, value, isBalanced, error);
         if (!(*isBalanced) && !(*error)) {
-            if (node->balance == -1) {
-                *isBalanced = true;
-            }
             ++node->balance;
         }
     }
 
-    return balance(node);
+    node = balance(node);
+    if (node->balance == 0) {
+        *isBalanced = true;
+    }
+    return node;
 }
 
 bool avlTreeAdd(AVLTree* tree, char* key, char* value)
@@ -367,7 +367,6 @@ bool avlTreeAddFromFile(AVLTree* tree, char* filename)
         case '\n':
             if (!isPreColon) {
                 avlTreeAdd(tree, key, value);
-                printf("%s - %s\n", key, value);
 
                 free(key);
                 free(value);
@@ -440,17 +439,11 @@ static Node* avlTreeDeleteRecursion(Node* node, char* key, bool* isBalanced, boo
     if (strcmp(key, node->key) < 0) {
         node->leftChild = avlTreeDeleteRecursion(node->leftChild, key, isBalanced, error);
         if (!(*isBalanced) && !(*error)) {
-            if (node->balance == 0) {
-                *isBalanced = true;
-            }
             ++node->balance;
         }
     } else if (strcmp(key, node->key) > 0) {
         node->rightChild = avlTreeDeleteRecursion(node->rightChild, key, isBalanced, error);
         if (!(*isBalanced) && !(*error)) {
-            if (node->balance == 0) {
-                *isBalanced = true;
-            }
             --node->balance;
         }
     } else {
@@ -478,7 +471,11 @@ static Node* avlTreeDeleteRecursion(Node* node, char* key, bool* isBalanced, boo
         }
     }
 
-    return balance(node);
+    node = balance(node);
+    if (node->balance == 1 || node->balance == -1) {
+        *isBalanced = true;
+    }
+    return node;
 }
 
 bool avlTreeDelete(AVLTree* tree, char* key)
