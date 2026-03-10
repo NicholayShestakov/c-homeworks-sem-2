@@ -32,9 +32,9 @@ void leftRotationTest(void)
     avlTreeAdd(tree, "a", "some data");
     avlTreeAdd(tree, "b", "some data");
     avlTreeAdd(tree, "c", "some data");
-    assert(tree->root->key != NULL && strcmp(tree->root->key, "b") == 0 && "Left rotation works incorrect.");
-    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "a") == 0 && "Left rotation works incorrect.");
-    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "c") == 0 && "Left rotation works incorrect.");
+    assert(tree->root != NULL && strcmp(tree->root->key, "b") == 0 && "Left rotation works incorrect.");
+    assert(tree->root->leftChild != NULL && strcmp(tree->root->leftChild->key, "a") == 0 && "Left rotation works incorrect.");
+    assert(tree->root->rightChild != NULL && strcmp(tree->root->rightChild->key, "c") == 0 && "Left rotation works incorrect.");
     avlTreeFree(&tree);
 }
 
