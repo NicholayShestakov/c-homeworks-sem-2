@@ -285,6 +285,7 @@ static Node* avlTreeAddRecursion(Node* node, char* key, char* value, bool* isBal
 
         newNode->key = malloc((strlen(key) + 1) * sizeof(char));
         if (newNode->key == NULL) {
+            free(newNode);
             *error = true;
             return NULL;
         }
@@ -292,6 +293,8 @@ static Node* avlTreeAddRecursion(Node* node, char* key, char* value, bool* isBal
 
         newNode->value = malloc((strlen(value) + 1) * sizeof(char));
         if (newNode->value == NULL) {
+            free(newNode->key);
+            free(newNode);
             *error = true;
             return NULL;
         }
@@ -412,22 +415,24 @@ bool avlTreeAddFromFile(AVLTree* tree, char* filename)
             if (isPreColon) {
                 if (keySize == keyCapacity) {
                     keyCapacity *= 2;
-                    key = realloc(key, keyCapacity * sizeof(*key));
-                    if (key == NULL) {
+                    char* newKey = realloc(key, keyCapacity * sizeof(*key));
+                    if (newKey == NULL) {
                         free(value);
                         return false;
                     }
+                    key = newKey;
                 }
                 key[keySize - 1] = currentSymbol;
                 key[keySize++] = '\0';
             } else {
                 if (valueSize == valueCapacity) {
                     valueCapacity *= 2;
-                    value = realloc(value, valueCapacity * sizeof(*value));
-                    if (value == NULL) {
+                    char* newValue = realloc(value, valueCapacity * sizeof(*value));
+                    if (newValue == NULL) {
                         free(key);
                         return false;
                     }
+                    value = newValue;
                 }
                 value[valueSize - 1] = currentSymbol;
                 value[valueSize++] = '\0';

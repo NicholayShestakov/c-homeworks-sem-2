@@ -1,4 +1,4 @@
-#include "../avl_tree.c"
+#include "../avl_tree.c" // NOLINT
 #include <assert.h>
 
 void emptyTest(void)
@@ -32,9 +32,9 @@ void leftRotationTest(void)
     avlTreeAdd(tree, "a", "some data");
     avlTreeAdd(tree, "b", "some data");
     avlTreeAdd(tree, "c", "some data");
-    assert(strcmp(tree->root->key, "b") == 0 && "Left rotation works incorrect.");
-    assert(strcmp(tree->root->leftChild->key, "a") == 0 && "Left rotation works incorrect.");
-    assert(strcmp(tree->root->rightChild->key, "c") == 0 && "Left rotation works incorrect.");
+    assert(tree->root->key != NULL && strcmp(tree->root->key, "b") == 0 && "Left rotation works incorrect.");
+    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "a") == 0 && "Left rotation works incorrect.");
+    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "c") == 0 && "Left rotation works incorrect.");
     avlTreeFree(&tree);
 }
 
@@ -44,9 +44,9 @@ void rightRotationTest(void)
     avlTreeAdd(tree, "c", "some data");
     avlTreeAdd(tree, "b", "some data");
     avlTreeAdd(tree, "a", "some data");
-    assert(strcmp(tree->root->key, "b") == 0 && "Right rotation works incorrect.");
-    assert(strcmp(tree->root->leftChild->key, "a") == 0 && "Right rotation works incorrect.");
-    assert(strcmp(tree->root->rightChild->key, "c") == 0 && "Right rotation works incorrect.");
+    assert(tree->root->key != NULL && strcmp(tree->root->key, "b") == 0 && "Right rotation works incorrect.");
+    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "a") == 0 && "Right rotation works incorrect.");
+    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "c") == 0 && "Right rotation works incorrect.");
     avlTreeFree(&tree);
 }
 
@@ -56,9 +56,9 @@ void bigLeftRotationTest(void)
     avlTreeAdd(tree, "a", "some data");
     avlTreeAdd(tree, "c", "some data");
     avlTreeAdd(tree, "b", "some data");
-    assert(strcmp(tree->root->key, "b") == 0 && "Big left rotation works incorrect.");
-    assert(strcmp(tree->root->leftChild->key, "a") == 0 && "Big left rotation works incorrect.");
-    assert(strcmp(tree->root->rightChild->key, "c") == 0 && "Big left rotation works incorrect.");
+    assert(tree->root->key != NULL && strcmp(tree->root->key, "b") == 0 && "Big left rotation works incorrect.");
+    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "a") == 0 && "Big left rotation works incorrect.");
+    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "c") == 0 && "Big left rotation works incorrect.");
     avlTreeFree(&tree);
 }
 
@@ -68,9 +68,9 @@ void bigRightRotationTest(void)
     avlTreeAdd(tree, "c", "some data");
     avlTreeAdd(tree, "a", "some data");
     avlTreeAdd(tree, "b", "some data");
-    assert(strcmp(tree->root->key, "b") == 0 && "Big right rotation works incorrect.");
-    assert(strcmp(tree->root->leftChild->key, "a") == 0 && "Big right rotation works incorrect.");
-    assert(strcmp(tree->root->rightChild->key, "c") == 0 && "Big right rotation works incorrect.");
+    assert(tree->root->key != NULL && strcmp(tree->root->key, "b") == 0 && "Big right rotation works incorrect.");
+    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "a") == 0 && "Big right rotation works incorrect.");
+    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "c") == 0 && "Big right rotation works incorrect.");
     avlTreeFree(&tree);
 }
 
@@ -82,9 +82,9 @@ void deleteLeftRotationTest(void)
     avlTreeAdd(tree, "c", "some data");
     avlTreeAdd(tree, "d", "some data");
     avlTreeDelete(tree, "a");
-    assert(strcmp(tree->root->key, "c") == 0 && "Left rotation after delete works incorrect.");
-    assert(strcmp(tree->root->leftChild->key, "b") == 0 && "Left rotation after delete works incorrect.");
-    assert(strcmp(tree->root->rightChild->key, "d") == 0 && "Left rotation after delete works incorrect.");
+    assert(tree->root->key != NULL && strcmp(tree->root->key, "c") == 0 && "Left rotation after delete works incorrect.");
+    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "b") == 0 && "Left rotation after delete works incorrect.");
+    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "d") == 0 && "Left rotation after delete works incorrect.");
     avlTreeFree(&tree);
 }
 
@@ -96,9 +96,9 @@ void deleteRightRotationTest(void)
     avlTreeAdd(tree, "a", "some data");
     avlTreeAdd(tree, "d", "some data");
     avlTreeDelete(tree, "d");
-    assert(strcmp(tree->root->key, "b") == 0 && "Right rotation after delete works incorrect.");
-    assert(strcmp(tree->root->leftChild->key, "a") == 0 && "Right rotation after delete works incorrect.");
-    assert(strcmp(tree->root->rightChild->key, "c") == 0 && "Right rotation after delete works incorrect.");
+    assert(tree->root->key != NULL && strcmp(tree->root->key, "b") == 0 && "Right rotation after delete works incorrect.");
+    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "a") == 0 && "Right rotation after delete works incorrect.");
+    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "c") == 0 && "Right rotation after delete works incorrect.");
     avlTreeFree(&tree);
 }
 
@@ -110,9 +110,9 @@ void deleteBigLeftRotationTest(void)
     avlTreeAdd(tree, "d", "some data");
     avlTreeAdd(tree, "c", "some data");
     avlTreeDelete(tree, "a");
-    assert(strcmp(tree->root->key, "c") == 0 && "Big left rotation after delete works incorrect.");
-    assert(strcmp(tree->root->leftChild->key, "b") == 0 && "Big left rotation after delete works incorrect.");
-    assert(strcmp(tree->root->rightChild->key, "d") == 0 && "Big left rotation after delete works incorrect.");
+    assert(tree->root->key != NULL && strcmp(tree->root->key, "c") == 0 && "Big left rotation after delete works incorrect.");
+    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "b") == 0 && "Big left rotation after delete works incorrect.");
+    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "d") == 0 && "Big left rotation after delete works incorrect.");
     avlTreeFree(&tree);
 }
 
@@ -124,9 +124,9 @@ void deleteBigRightRotationTest(void)
     avlTreeAdd(tree, "b", "some data");
     avlTreeAdd(tree, "d", "some data");
     avlTreeDelete(tree, "d");
-    assert(strcmp(tree->root->key, "b") == 0 && "Big left rotation after delete works incorrect.");
-    assert(strcmp(tree->root->leftChild->key, "a") == 0 && "Big left rotation after delete works incorrect.");
-    assert(strcmp(tree->root->rightChild->key, "c") == 0 && "Big left rotation after delete works incorrect.");
+    assert(tree->root->key != NULL && strcmp(tree->root->key, "b") == 0 && "Big left rotation after delete works incorrect.");
+    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "a") == 0 && "Big left rotation after delete works incorrect.");
+    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "c") == 0 && "Big left rotation after delete works incorrect.");
     avlTreeFree(&tree);
 }
 
@@ -134,9 +134,9 @@ void addFromFileAndSaveInFileTest(void)
 {
     AVLTree* tree = avlTreeCreate();
     assert(avlTreeAddFromFile(tree, "../src/avl_tree/test/testfile.txt") && "Add from file works incorrect.");
-    assert(strcmp(tree->root->key, "b") == 0 && "Add from file works incorrect.");
-    assert(strcmp(tree->root->leftChild->key, "a") == 0 && "Add from file works incorrect.");
-    assert(strcmp(tree->root->rightChild->key, "c") == 0 && "Add from file works incorrect.");
+    assert(tree->root->key != NULL && strcmp(tree->root->key, "b") == 0 && "Add from file works incorrect.");
+    assert(tree->root->leftChild->key != NULL && strcmp(tree->root->leftChild->key, "a") == 0 && "Add from file works incorrect.");
+    assert(tree->root->rightChild->key != NULL && strcmp(tree->root->rightChild->key, "c") == 0 && "Add from file works incorrect.");
 
     assert(avlTreeSaveInFile(tree, "testsavefile.txt") && "Save in file works incorrect.");
     FILE* testsavefile = fopen("testsavefile.txt", "r");
