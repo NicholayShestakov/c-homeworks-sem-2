@@ -7,10 +7,10 @@ enable_testing()
 add_library(avl_tree src/avl_tree/avl_tree.c)
 
 # Executables
-add_executable(avl_tree_hw src/avl_tree/main.c)
+add_executable(aerosoft src/avl_tree/main.c)
 
 # Links
-target_link_libraries(avl_tree_hw PRIVATE avl_tree m)
+target_link_libraries(aerosoft PRIVATE avl_tree m)
 
 # Tests
 add_executable(avl_tree_test src/avl_tree/test/test_avl_tree.c)
