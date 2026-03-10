@@ -130,6 +130,26 @@ void deleteBigRightRotationTest(void)
     avlTreeFree(&tree);
 }
 
+void addFromFileAndSaveInFileTest(void)
+{
+    AVLTree* tree = avlTreeCreate();
+    assert(avlTreeAddFromFile(tree, "../src/avl_tree/test/testfile.txt") && "Add from file works incorrect.");
+    assert(strcmp(tree->root->key, "b") == 0 && "Add from file works incorrect.");
+    assert(strcmp(tree->root->leftChild->key, "a") == 0 && "Add from file works incorrect.");
+    assert(strcmp(tree->root->rightChild->key, "c") == 0 && "Add from file works incorrect.");
+
+    assert(avlTreeSaveInFile(tree, "testsavefile.txt") && "Save in file works incorrect.");
+    FILE* testsavefile = fopen("testsavefile.txt", "r");
+    char buffer[100];
+    assert(strcmp(fgets(buffer, sizeof(buffer), testsavefile), "b:some data\n") == 0 && "Save in file works incorrect.");
+    assert(strcmp(fgets(buffer, sizeof(buffer), testsavefile), "a:some data\n") == 0 && "Save in file works incorrect.");
+    assert(strcmp(fgets(buffer, sizeof(buffer), testsavefile), "c:some data\n") == 0 && "Save in file works incorrect.");
+
+    fclose(testsavefile);
+    remove("testsavefile.txt");
+    avlTreeFree(&tree);
+}
+
 int main(void)
 {
     emptyTest();
@@ -142,6 +162,7 @@ int main(void)
     deleteRightRotationTest();
     deleteBigLeftRotationTest();
     deleteBigRightRotationTest();
+    addFromFileAndSaveInFileTest();
 
     return 0;
 }
