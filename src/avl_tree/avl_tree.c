@@ -253,12 +253,18 @@ static Node* balance(Node* node)
     }
 
     if (node->balance == 2) {
+        if (node->rightChild == NULL) {
+            return NULL;
+        }
         if (node->rightChild->balance >= 0) {
             return rotateLeft(node);
         }
         return bigRotateLeft(node);
     }
     if (node->balance == -2) {
+        if (node->leftChild == NULL) {
+            return NULL;
+        }
         if (node->leftChild->balance <= 0) {
             return rotateRight(node);
         }
@@ -282,14 +288,14 @@ static Node* avlTreeAddRecursion(Node* node, char* key, char* value, bool* isBal
             *error = true;
             return NULL;
         }
-        strcpy(newNode->key, key);
+        strlcpy(newNode->key, key, sizeof(newNode->key));
 
         newNode->value = malloc((strlen(value) + 1) * sizeof(char));
         if (newNode->value == NULL) {
             *error = true;
             return NULL;
         }
-        strcpy(newNode->value, value);
+        strlcpy(newNode->value, value, sizeof(newNode->value));
 
         return newNode;
     }
@@ -344,15 +350,23 @@ bool avlTreeAddFromFile(AVLTree* tree, char* filename)
     }
 
     char* key = calloc(4, sizeof(*key));
+    if (key == NULL) {
+        return false;
+    }
     size_t keyCapacity = 4;
     size_t keySize = 1; // Размер сразу 1 на \0
+
     char* value = calloc(64, sizeof(*value));
+    if (value == NULL) {
+        free(key);
+        return false;
+    }
     size_t valueCapacity = 64;
     size_t valueSize = 1; // Размер сразу 1 на \0
 
     bool isPreColon = true;
     while (!feof(file)) {
-        char currentSymbol = fgetc(file);
+        char currentSymbol = (char)fgetc(file);
         switch (currentSymbol) {
         case ':':
             if (isPreColon) {
@@ -370,10 +384,19 @@ bool avlTreeAddFromFile(AVLTree* tree, char* filename)
 
                 free(key);
                 free(value);
+
                 key = calloc(4, sizeof(*key));
+                if (key == NULL) {
+                    return false;
+                }
                 keyCapacity = 4;
                 keySize = 1;
+
                 value = calloc(64, sizeof(*value));
+                if (value == NULL) {
+                    free(key);
+                    return false;
+                }
                 valueCapacity = 64;
                 valueSize = 1;
 
@@ -390,6 +413,10 @@ bool avlTreeAddFromFile(AVLTree* tree, char* filename)
                 if (keySize == keyCapacity) {
                     keyCapacity *= 2;
                     key = realloc(key, keyCapacity * sizeof(*key));
+                    if (key == NULL) {
+                        free(value);
+                        return false;
+                    }
                 }
                 key[keySize - 1] = currentSymbol;
                 key[keySize++] = '\0';
@@ -397,6 +424,10 @@ bool avlTreeAddFromFile(AVLTree* tree, char* filename)
                 if (valueSize == valueCapacity) {
                     valueCapacity *= 2;
                     value = realloc(value, valueCapacity * sizeof(*value));
+                    if (value == NULL) {
+                        free(key);
+                        return false;
+                    }
                 }
                 value[valueSize - 1] = currentSymbol;
                 value[valueSize++] = '\0';
