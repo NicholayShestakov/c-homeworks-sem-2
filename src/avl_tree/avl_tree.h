@@ -19,7 +19,7 @@ bool avlTreeFree(AVLTree** tree);
 /*
  * Finds node with given key.
  * Returns this node pointer to the value.
- * If something went wrong returns NULL.
+ * If node is not exists in tree or something went wrong returns NULL.
  */
 char* avlTreeFind(AVLTree* tree, char* key);
 
@@ -51,6 +51,13 @@ bool avlTreeAdd(AVLTree* tree, char* key, char* value);
  * If something went wrong returns false, else returns true.
  */
 bool avlTreeAddFromFile(AVLTree* tree, char* filename);
+
+/*
+ * Saves all nodes from tree in file <filename> in format '<key>:<value>\n'.
+ * If file is already exists rewrites it.
+ * If something went wrong returns false.
+ */
+bool avlTreeSaveInFile(AVLTree* tree, char* filename);
 
 /*
  * Deletes node with given key and returns true, if node is exists.
