@@ -138,9 +138,9 @@ static Node* rotateLeft(Node* node)
 
     Node* a = node;
     Node* b = a->rightChild;
-    Node* C = b->leftChild;
+    Node* c = b->leftChild;
 
-    a->rightChild = C;
+    a->rightChild = c;
     b->leftChild = a;
 
     return b;
@@ -166,9 +166,9 @@ static Node* rotateRight(Node* node)
 
     Node* a = node;
     Node* b = a->leftChild;
-    Node* C = b->rightChild;
+    Node* c = b->rightChild;
 
-    a->leftChild = C;
+    a->leftChild = c;
     b->rightChild = a;
 
     return b;
@@ -199,11 +199,11 @@ static Node* bigRotateLeft(Node* node)
     Node* a = node;
     Node* b = a->rightChild;
     Node* c = b->leftChild;
-    Node* M = c->leftChild;
-    Node* N = c->rightChild;
+    Node* m = c->leftChild;
+    Node* n = c->rightChild;
 
-    a->rightChild = M;
-    b->leftChild = N;
+    a->rightChild = m;
+    b->leftChild = n;
     c->leftChild = a;
     c->rightChild = b;
 
@@ -235,11 +235,11 @@ static Node* bigRotateRight(Node* node)
     Node* a = node;
     Node* b = a->leftChild;
     Node* c = b->rightChild;
-    Node* M = c->leftChild;
-    Node* N = c->rightChild;
+    Node* m = c->leftChild;
+    Node* n = c->rightChild;
 
-    a->leftChild = N;
-    b->rightChild = M;
+    a->leftChild = n;
+    b->rightChild = m;
     c->leftChild = b;
     c->rightChild = a;
 
