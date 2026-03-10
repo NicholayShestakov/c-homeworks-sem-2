@@ -411,6 +411,42 @@ bool avlTreeAddFromFile(AVLTree* tree, char* filename)
     return true;
 }
 
+void avlTreeSaveInFileRecursion(Node* node, FILE* file, bool* error)
+{
+    if (file == NULL) {
+        *error = true;
+        return;
+    }
+    if (node == NULL) {
+        return;
+    }
+    if (node->key == NULL || node->value == NULL) {
+        *error = true;
+        return;
+    }
+
+    fprintf(file, "%s:%s\n", node->key, node->value);
+    avlTreeSaveInFileRecursion(node->leftChild, file, error);
+    avlTreeSaveInFileRecursion(node->rightChild, file, error);
+}
+
+bool avlTreeSaveInFile(AVLTree* tree, char* filename)
+{
+    if (tree == NULL || filename == NULL) {
+        return false;
+    }
+
+    FILE* file = fopen(filename, "w");
+    if (file == NULL) {
+        return false;
+    }
+
+    bool error = false;
+    avlTreeSaveInFileRecursion(tree->root, file, &error);
+    fclose(file);
+    return !error;
+}
+
 /*
  * Меняет местами две ненулевые ноды.
  * В случае нулёвости одной из нод ничего не делает.
